@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Opções do Coletor</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="options-container">
+        <h1>Configurações</h1>
+        <div class="form-group">
+            <label for="interval">Intervalo de captura (em segundos):</label>
+            <input type="number" id="interval" min="5" placeholder="Mínimo 5 segundos">
+        </div>
+        <div class="form-group">
+            <label for="webhookUrl">URL do Webhook:</label>
+            <input type="url" id="webhookUrl" placeholder="https://seu.servico.com/webhook/...">
+        </div>
+        <button id="save">Salvar Configurações</button>
+        <div id="status-options" class="status-options"></div>
+    </div>
+    <script src="options.js" type="module"></script>
+</body>
+</html>

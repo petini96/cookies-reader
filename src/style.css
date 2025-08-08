@@ -1,0 +1,193 @@
+/* --- Variáveis de Cor --- */
+:root {
+  --background-dark: #1E1E2E;
+  --surface-dark: #2D2D44;
+  --primary-text: #F5F5F5;
+  --secondary-text: #A0A0B8;
+  --accent-blue: #3399FF;
+  --accent-glow: rgba(51, 153, 255, 0.5);
+  --success-green: #28a745;
+  --error-red: #dc3545;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Estilos Globais --- */
+body {
+  font-family: var(--font-family);
+  background-color: var(--background-dark);
+  color: var(--primary-text);
+  margin: 0;
+  font-size: 14px;
+}
+
+/* --- Layout do Popup --- */
+.popup-container {
+  width: 280px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.popup-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.popup-icon {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+.popup-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--primary-text);
+}
+.status {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 12px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Estilos do Painel de Métricas --- */
+.metrics-dashboard {
+  width: 100%;
+  background-color: var(--surface-dark);
+  border-radius: 8px;
+  padding: 15px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+.countdown-container {
+  text-align: center;
+  border-bottom: 1px solid rgba(160, 160, 184, 0.2);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+.countdown-label {
+  font-size: 10px;
+  color: var(--secondary-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.countdown-timer {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  line-height: 1.2;
+}
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.metric-item {
+  background-color: var(--background-dark);
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.metric-label {
+  font-size: 11px;
+  color: var(--secondary-text);
+  margin-bottom: 4px;
+}
+.metric-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+.reset-button {
+  background: none;
+  border: 1px solid var(--secondary-text);
+  color: var(--secondary-text);
+  font-size: 12px;
+  padding: 5px;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+}
+.reset-button:hover {
+  background: var(--surface-dark);
+  border-color: var(--primary-text);
+  color: var(--primary-text);
+}
+
+/* --- Controles e Botões --- */
+.controls { width: 100%; }
+button {
+  width: 100%; padding: 12px; margin-bottom: 10px; border: none;
+  border-radius: 8px; font-family: var(--font-family); font-weight: 600;
+  font-size: 14px; cursor: pointer; transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+#start {
+  background: linear-gradient(45deg, var(--success-green), #34D399);
+  color: white;
+}
+#stop {
+  background: linear-gradient(45deg, var(--error-red), #F87171);
+  color: white;
+}
+
+/* --- Links --- */
+.options-link, .logs-link {
+  color: var(--accent-blue); font-size: 12px; font-weight: 500;
+  text-decoration: none; margin-top: 10px; transition: color 0.2s ease;
+  width: 100%; text-align: center;
+}
+.logs-link { margin-top: 0; padding-bottom: 5px; }
+.options-link:hover, .logs-link:hover {
+  color: var(--primary-text); text-decoration: underline;
+}
+
+/* --- Estilos da Página de Opções --- */
+.options-container { padding: 20px 30px; width: 420px; }
+.options-container h1 { text-align: center; margin-bottom: 30px; font-weight: 600; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--secondary-text); }
+input[type="number"], input[type="url"] {
+  width: 100%; padding: 12px; box-sizing: border-box; background-color: var(--surface-dark);
+  border: 2px solid transparent; border-radius: 8px; color: var(--primary-text);
+  font-size: 14px; transition: border-color 0.2s ease;
+}
+input[type="number"]:focus, input[type="url"]:focus { outline: none; border-color: var(--accent-blue); }
+.options-container button { background-color: var(--accent-blue); color: white; }
+#status-options { margin-top: 15px; text-align: center; font-weight: bold; }
+
+/* --- Estilos da Página de Logs --- */
+.logs-container { padding: 20px 30px; max-width: 800px; margin: auto; }
+.logs-container h1 { text-align: center; margin-bottom: 20px; }
+.logs-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; gap: 10px; }
+.logs-header button { width: auto; background-color: var(--surface-dark); color: var(--primary-text); box-shadow: none; padding: 8px 15px; margin: 0; }
+.logs-content {
+  background-color: var(--surface-dark); border-radius: 8px;
+  padding: 10px; height: 75vh; overflow-y: auto;
+  font-family: "Courier New", Courier, monospace;
+}
+.log-item {
+  padding: 8px; border-bottom: 1px solid #3c3c5a; display: flex;
+  gap: 15px; font-size: 13px; align-items: baseline;
+}
+.log-item:last-child { border-bottom: none; }
+.log-timestamp { color: var(--secondary-text); white-space: nowrap; }
+.log-type { font-weight: bold; flex-shrink: 0; }
+.log-message { word-break: break-all; }
+.log-type-success { color: #34D399; }
+.log-type-error { color: #F87171; }
+.log-type-info { color: var(--accent-blue); }

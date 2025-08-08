@@ -1,0 +1,22 @@
+{
+  "name": "coletor-webhook",
+  "version": "2.0.0",
+  "description": "Extensão para Chrome que envia cookies periodicamente para um webhook.",
+  "author": "Vinícius dos Santos Petini",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petini96/cookies-reader.git"
+  },
+  "homepage": "https://github.com/petini96/cookies-reader#readme",
+  "bugs": {
+    "url": "https://github.com/petini96/cookies-reader/issues"
+  },
+  "scripts": {
+    "build": "tsc && copyfiles -u 1 src/*.html dist && copyfiles -u 1 src/*.css dist && copyfiles manifest.json dist && copyfiles -u 1 -f images/* dist/images"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "copyfiles": "^2.4.1",
+    "typescript": "^5.5.3"
+  }
+}
