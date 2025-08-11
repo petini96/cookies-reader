@@ -1,11 +1,7 @@
 function formatLogTimestamp(isoString: string): string {
     return new Date(isoString).toLocaleString('pt-BR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
 }
 
@@ -16,7 +12,7 @@ async function displayLogs() {
     const { logs = [] } = await chrome.storage.local.get('logs');
     
     if (logs.length === 0) {
-        logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado.</div>';
+        logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado. Inicie uma captura.</div>';
         return;
     }
 
@@ -27,20 +23,32 @@ async function displayLogs() {
             <span class="log-message">${log.message}</span>
         </div>
     `).join('');
+
+    // Rola para o log mais recente (o primeiro item)
+    logsContent.scrollTop = 0; 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const clearBtn = document.getElementById('clear-logs');
-    const refreshBtn = document.getElementById('refresh-logs');
+// --- LÓGICA DE ATUALIZAÇÃO EM TEMPO REAL ---
 
-    clearBtn?.addEventListener('click', async () => {
-        await chrome.storage.local.set({ logs: [] });
-        displayLogs();
-    });
-
-    refreshBtn?.addEventListener('click', displayLogs);
-
-    displayLogs();
+// Ouve por mudanças no chrome.storage
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    // Verifica se a mudança foi nos 'logs' e no armazenamento 'local'
+    if (namespace === 'local' && changes.logs) {
+        console.log('Logs atualizados, redesenhando a tela.');
+        displayLogs(); // Chama a função para redesenhar os logs
+    }
 });
+
+// Listener para o botão de limpar logs
+document.getElementById('clear-logs')?.addEventListener('click', async () => {
+    await chrome.storage.local.set({ logs: [] });
+    // A linha acima vai disparar o 'onChanged', então displayLogs() será chamado automaticamente.
+});
+
+// Listener para o botão de atualizar (pode ser mantido por segurança ou removido do HTML)
+document.getElementById('refresh-logs')?.addEventListener('click', displayLogs);
+
+// Carrega os logs quando a página abre pela primeira vez
+document.addEventListener('DOMContentLoaded', displayLogs);
 
 export {};

@@ -1,42 +1,42 @@
 const intervalInput = document.getElementById('interval') as HTMLInputElement;
 const webhookUrlInput = document.getElementById('webhookUrl') as HTMLInputElement;
 const saveButton = document.getElementById('save') as HTMLButtonElement;
-const statusDiv = document.getElementById('status') as HTMLDivElement;
+const statusDiv = document.getElementById('status-options') as HTMLDivElement;
 
 function saveOptions() {
   const interval = parseInt(intervalInput.value, 10);
-  const webhookUrl = webhookUrlInput.value;
+  const webhookUrl = webhookUrlInput.value.trim();
 
-  if (interval < 1) {
-    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 1 minuto.';
+  // Validação
+  if (isNaN(interval) || interval < 5) {
+    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 5 segundos.';
+    statusDiv.style.color = 'var(--error-red)';
     return;
   }
-  if (!webhookUrl.startsWith('http')) {
+  if (!webhookUrl.startsWith('https://') && !webhookUrl.startsWith('http://')) {
       statusDiv.textContent = 'Erro: A URL do webhook parece ser inválida.';
+      statusDiv.style.color = 'var(--error-red)';
       return;
   }
 
   chrome.storage.sync.set(
     { interval, webhookUrl },
     () => {
-      // Exibe a mensagem de sucesso
-      statusDiv.textContent = 'Opções salvas! Fechando em 2 segundos...';
+      // Exibe a mensagem de sucesso com estilo
+      statusDiv.textContent = 'Configurações salvas com sucesso!';
+      statusDiv.style.color = 'var(--success-green)';
       
-      // Espera 2 segundos e depois fecha a aba
-      setTimeout(async () => {
-        // Encontra a aba atual (a própria página de opções)
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab && tab.id) {
-          chrome.tabs.remove(tab.id);
-        }
-      }, 2000);
+      // Limpa a mensagem após 5 segundos
+      setTimeout(() => {
+        statusDiv.textContent = '';
+      }, 5000);
     }
   );
 }
 
 function restoreOptions() {
   chrome.storage.sync.get(
-    { interval: 15, webhookUrl: '' },
+    { interval: 15, webhookUrl: '' }, // Padrão de 15 segundos
     (items) => {
       intervalInput.value = items.interval;
       webhookUrlInput.value = items.webhookUrl;
