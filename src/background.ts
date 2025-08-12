@@ -19,7 +19,7 @@ async function updateMetric(metricToUpdate: 'attempts' | 'successes' | 'errors')
 }
 
 // Função principal que captura e envia o cookie
-async function captureAndSendCookies() {
+async function startIntegration() {
   await addLog('Iniciando integracao...', 'INFO');
   await updateMetric('attempts');
 
@@ -79,11 +79,13 @@ async function captureAndSendCookies() {
       if (responseData.status === 'ok') {
         await addLog(`JSESSIONID enviado com sucesso!`, 'SUCCESS');
         await updateMetric('successes');
+        await chrome.storage.local.set({ lastIntegrationMessage: responseData.message });
         chrome.action.setBadgeText({ text: 'OK' });
         chrome.action.setBadgeBackgroundColor({ color: '#28a745' });
       } else if (responseData.status === 'fail') {
         await addLog(`Falha na integração: ${responseData.message}`, 'ERROR');
         await updateMetric('errors');
+        await chrome.storage.local.set({ lastIntegrationMessage: responseData.message });
         chrome.action.setBadgeText({ text: 'FAIL' });
         chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
       } else {
@@ -114,7 +116,7 @@ async function captureAndSendCookies() {
 // Ouve o alarme para executar a função periodicamente
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'cookie-collector') {
-    captureAndSendCookies();
+    startIntegration();
   }
 });
 

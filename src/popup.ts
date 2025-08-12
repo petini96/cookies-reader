@@ -4,12 +4,14 @@ async function displayMetrics() {
   const attemptsEl = document.getElementById('attempts-count');
   const successesEl = document.getElementById('success-count');
   const errorsEl = document.getElementById('error-count');
+  const messageEl = document.getElementById('last-integration-message');
 
-  const metrics = await chrome.storage.local.get({ attempts: 0, successes: 0, errors: 0 });
+  const data = await chrome.storage.local.get({ attempts: 0, successes: 0, errors: 0, lastIntegrationMessage: '' });
 
-  if(attemptsEl) attemptsEl.textContent = metrics.attempts.toString();
-  if(successesEl) successesEl.textContent = metrics.successes.toString();
-  if(errorsEl) errorsEl.textContent = metrics.errors.toString();
+  if(attemptsEl) attemptsEl.textContent = data.attempts.toString();
+  if(successesEl) successesEl.textContent = data.successes.toString();
+  if(errorsEl) errorsEl.textContent = data.errors.toString();
+  if(messageEl) messageEl.textContent = data.lastIntegrationMessage;
 }
 
 function formatTime(seconds: number): string {
@@ -98,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   resetBtn.addEventListener('click', async () => {
-      await chrome.storage.local.set({ attempts: 0, successes: 0, errors: 0, logs: [] });
+      await chrome.storage.local.set({ attempts: 0, successes: 0, errors: 0, logs: [], lastIntegrationMessage: '' });
       displayMetrics();
       // Opcional: notifica o usuário
       resetBtn.textContent = 'Limpo!';
