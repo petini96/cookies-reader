@@ -1,15 +1,15 @@
 {
-  "name": "imo-msqd-n8n",
+  "name": "msqd-n8n-imo",
   "version": "2.2.1",
-  "description": "Extensão para Chrome que envia cookies periodicamente para um webhook.",
+  "description": "Extensão para Chrome que integra MSQD com IMO.",
   "author": "Valter Ferlete",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/petini96/cookies-reader.git"
+    "url": "git+https://github.com/ferlete/msqd-imo.git"
   },
-  "homepage": "https://github.com/petini96/cookies-reader#readme",
+  "homepage": "https://github.com/ferlete/msqd-imo#readme",
   "bugs": {
-    "url": "https://github.com/petini96/cookies-reader/issues"
+    "url": "https://github.com/felrete/msqd-imo/issues"
   },
   "scripts": {
     "build": "tsc && copyfiles -u 1 src/*.html dist && copyfiles -u 1 src/*.css dist && copyfiles manifest.json dist && copyfiles -u 1 -f images/* dist/images"

@@ -27,7 +27,7 @@ async function startCountdown() {
 
     if (countdownInterval) clearInterval(countdownInterval);
 
-    const alarm = await chrome.alarms.get('cookie-collector');
+    const alarm = await chrome.alarms.get('msqd-n8n-imo');
     if (!alarm) {
         countdownEl.textContent = "--:--";
         return;
@@ -46,7 +46,7 @@ async function startCountdown() {
 
 async function updateStatus(statusDiv: HTMLDivElement) {
   try {
-    const alarm = await chrome.alarms.get('cookie-collector');
+    const alarm = await chrome.alarms.get('msqd-n8n-imo');
     if (alarm) {
       // Usamos alarm.periodInMinutes que foi usado para criar o alarme
       const periodInMinutes = alarm.periodInMinutes ?? 1; // fallback to 1 minute if undefined
@@ -81,14 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const { interval } = await chrome.storage.sync.get({ interval: 60 });
     // A API de alarme usa minutos, então convertemos. Chrome aceita valores fracionados.
     const periodInMinutes = interval / 60;
-    
+
     // Para evitar spam, o Chrome impõe um limite. 0.1 min (6s) é um valor seguro.
-    chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
+    chrome.alarms.create('msqd-n8n-imo', { periodInMinutes: Math.max(0.1, periodInMinutes) });
     updateStatus(statusDiv);
   });
 
   stopBtn.addEventListener('click', () => {
-    chrome.alarms.clear('cookie-collector');
+    chrome.alarms.clear('msqd-n8n-imo');
     if(countdownInterval) clearInterval(countdownInterval); // Para o cronômetro imediatamente
     updateStatus(statusDiv);
   });

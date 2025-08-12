@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Integrador MSQD e IMO",
+  "name": "Integrador MSQD - N8N - IMO",
   "version": "2.2.1",
   "description": "Sincroniza dados do msqualifica.ms.gov.br com o IMO",
   "permissions": [
