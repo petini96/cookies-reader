@@ -4,7 +4,7 @@ async function displayMetrics() {
   const attemptsEl = document.getElementById('attempts-count');
   const successesEl = document.getElementById('success-count');
   const errorsEl = document.getElementById('error-count');
-  const messageEl = document.getElementById('last-integration-message');
+  const messageEl = document.getElementById('last-integration-message-content');
 
   const data = await chrome.storage.local.get({ attempts: 0, successes: 0, errors: 0, lastIntegrationMessage: '' });
 

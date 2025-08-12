@@ -1,8 +1,8 @@
 {
-  "name": "coletor-webhook",
-  "version": "2.0.0",
+  "name": "imo-msqd-n8n",
+  "version": "2.2.1",
   "description": "Extensão para Chrome que envia cookies periodicamente para um webhook.",
-  "author": "Vinícius dos Santos Petini",
+  "author": "Valter Ferlete",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/petini96/cookies-reader.git"
