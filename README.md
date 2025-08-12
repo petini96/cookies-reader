@@ -1,6 +1,6 @@
-# Coletor de Cookies para Webhook
+# Integrador de pessoas entre msqualifica.ms.gov.br com IMO
 
-Uma extensão para o Google Chrome que captura cookies de uma aba ativa em intervalos de tempo configuráveis e os envia para um webhook (como n8n, Zapier, etc.) para automação e integração de dados.
+Uma extensão para o Google Chrome que integra o MSQD com o IMO utlizando fluxos do n8n.
 
 ## ✨ Funcionalidades
 
