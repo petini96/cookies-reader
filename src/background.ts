@@ -20,9 +20,9 @@ async function updateMetric(metricToUpdate: 'attempts' | 'successes' | 'errors')
 
 // Função principal que captura e envia o cookie
 async function captureAndSendCookies() {
-  await addLog('Iniciando captura...', 'INFO');
+  await addLog('Iniciando integracao...', 'INFO');
   await updateMetric('attempts');
-  
+
   chrome.action.setBadgeText({ text: '...' });
   chrome.action.setBadgeBackgroundColor({ color: '#FFA500' });
 
@@ -57,12 +57,12 @@ async function captureAndSendCookies() {
       chrome.action.setBadgeText({ text: '' }); // Limpa o badge
       return;
     }
-    
+
     // 5. Prepara o payload APENAS com o JSESSIONID
     const payload = {
       capturedAt: new Date().toISOString(),
       pageUrl: tab.url,
-      jsessionid: jsessionidCookie.value 
+      jsessionid: jsessionidCookie.value
     };
 
     // 6. Envia os dados para o webhook
@@ -72,13 +72,28 @@ async function captureAndSendCookies() {
       body: JSON.stringify(payload),
     });
 
+    console.log(response);
+
     if (response.ok) {
-      await addLog(`JSESSIONID enviado com sucesso!`, 'SUCCESS');
-      await updateMetric('successes'); // MÉTRICA DE SUCESSO NO LUGAR CERTO
-      chrome.action.setBadgeText({ text: 'OK' });
-      chrome.action.setBadgeBackgroundColor({ color: '#28a745' });
+      const responseData = await response.json();
+      if (responseData.status === 'ok') {
+        await addLog(`JSESSIONID enviado com sucesso!`, 'SUCCESS');
+        await updateMetric('successes');
+        chrome.action.setBadgeText({ text: 'OK' });
+        chrome.action.setBadgeBackgroundColor({ color: '#28a745' });
+      } else if (responseData.status === 'fail') {
+        await addLog(`Falha na integração: ${responseData.message}`, 'ERROR');
+        await updateMetric('errors');
+        chrome.action.setBadgeText({ text: 'FAIL' });
+        chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
+      } else {
+        await addLog(`Resposta inesperada do webhook: ${JSON.stringify(responseData)}`, 'ERROR');
+        await updateMetric('errors');
+        chrome.action.setBadgeText({ text: 'FAIL' });
+        chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
+      }
     } else {
-      await addLog(`Falha no envio para ${webhookUrl}: Status ${response.status}`, 'ERROR');
+      await addLog(`Falha no envio para ${webhookUrl}: Status ${response.status} - ${response.statusText}`, 'ERROR');
       await updateMetric('errors');
       chrome.action.setBadgeText({ text: 'FAIL' });
       chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });

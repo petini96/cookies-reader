@@ -8,8 +8,8 @@ function saveOptions() {
   const webhookUrl = webhookUrlInput.value.trim();
 
   // Validação
-  if (isNaN(interval) || interval < 5) {
-    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 5 segundos.';
+  if (isNaN(interval) || interval < 60) {
+    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 60 segundos.';
     statusDiv.style.color = 'var(--error-red)';
     return;
   }
@@ -25,7 +25,7 @@ function saveOptions() {
       // Exibe a mensagem de sucesso com estilo
       statusDiv.textContent = 'Configurações salvas com sucesso!';
       statusDiv.style.color = 'var(--success-green)';
-      
+
       // Limpa a mensagem após 5 segundos
       setTimeout(() => {
         statusDiv.textContent = '';
@@ -36,7 +36,7 @@ function saveOptions() {
 
 function restoreOptions() {
   chrome.storage.sync.get(
-    { interval: 15, webhookUrl: '' }, // Padrão de 15 segundos
+    { interval: 60, webhookUrl: '' }, // Padrão de 60 segundos
     (items) => {
       intervalInput.value = items.interval;
       webhookUrlInput.value = items.webhookUrl;

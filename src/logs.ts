@@ -10,9 +10,9 @@ async function displayLogs() {
     if (!logsContent) return;
 
     const { logs = [] } = await chrome.storage.local.get('logs');
-    
+
     if (logs.length === 0) {
-        logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado. Inicie uma captura.</div>';
+        logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado. Inicie a integração para ver os logs.</div>';
         return;
     }
 
@@ -25,7 +25,7 @@ async function displayLogs() {
     `).join('');
 
     // Rola para o log mais recente (o primeiro item)
-    logsContent.scrollTop = 0; 
+    logsContent.scrollTop = 0;
 }
 
 // --- LÓGICA DE ATUALIZAÇÃO EM TEMPO REAL ---

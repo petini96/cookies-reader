@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Coletor de Cookies para Webhook",
+  "name": "Integrador MSQD e IMO",
   "version": "2.2.0",
-  "description": "Envia cookies periodicamente para um webhook.",
+  "description": "Sincroniza dados do msqualifica.ms.gov.br com o IMO",
   "permissions": [
     "cookies",
     "scripting",
