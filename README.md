@@ -23,8 +23,9 @@ Siga os passos abaixo para instalar e rodar a extensão em seu ambiente de desen
 
 1.  **Clone o Repositório:**
     ```bash
-    git clone [https://github.com/petini96/cookies-reader.git](https://github.com/petini96/cookies-reader.git)
-    cd cookies-reader
+    git clone [https://github.com/ferlete/msqd-imo.git](https://github.
+    com/ferlete/msqd-imo.git)
+    cd msqd-imo
     ```
 
 2.  **Instale as Dependências:**
