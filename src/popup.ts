@@ -27,7 +27,7 @@ async function startCountdown() {
 
     if (countdownInterval) clearInterval(countdownInterval);
 
-    const alarm = await chrome.alarms.get('msqd-n8n-imo');
+    const alarm = await chrome.alarms.get('cookie-collector');
     if (!alarm) {
         countdownEl.textContent = "--:--";
         return;
@@ -46,7 +46,7 @@ async function startCountdown() {
 
 async function updateStatus(statusDiv: HTMLDivElement) {
   try {
-    const alarm = await chrome.alarms.get('msqd-n8n-imo');
+    const alarm = await chrome.alarms.get('cookie-collector');
     if (alarm) {
       // Usamos alarm.periodInMinutes que foi usado para criar o alarme
       const periodInMinutes = alarm.periodInMinutes ?? 1; // fallback to 1 minute if undefined
@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const logsLink = document.getElementById('logsLink') as HTMLAnchorElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
   const resetBtn = document.getElementById('reset-metrics') as HTMLButtonElement;
+  const openInNewTabBtn = document.getElementById('open-in-new-tab') as HTMLButtonElement;
 
   startBtn.addEventListener('click', async () => {
     // Pega o intervalo em segundos do storage, com um padrão de 60s
@@ -83,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const periodInMinutes = interval / 60;
 
     // Para evitar spam, o Chrome impõe um limite. 0.1 min (6s) é um valor seguro.
-    chrome.alarms.create('msqd-n8n-imo', { periodInMinutes: Math.max(0.1, periodInMinutes) });
+    chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
     updateStatus(statusDiv);
   });
 
   stopBtn.addEventListener('click', () => {
-    chrome.alarms.clear('msqd-n8n-imo');
+    chrome.alarms.clear('cookie-collector');
     if(countdownInterval) clearInterval(countdownInterval); // Para o cronômetro imediatamente
     updateStatus(statusDiv);
   });
@@ -105,6 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Opcional: notifica o usuário
       resetBtn.textContent = 'Limpo!';
       setTimeout(() => { resetBtn.textContent = 'Resetar'; }, 1500);
+  });
+
+  openInNewTabBtn.addEventListener('click', () => {
+    chrome.tabs.create({ url: 'popup.html' });
   });
 
   // Funções iniciais ao abrir o popup

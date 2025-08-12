@@ -1,4 +1,3 @@
-// Helper para registrar logs
 async function addLog(message: string, type: 'INFO' | 'SUCCESS' | 'ERROR') {
   const { logs = [] } = await chrome.storage.local.get('logs');
   const newLog = {
@@ -6,8 +5,8 @@ async function addLog(message: string, type: 'INFO' | 'SUCCESS' | 'ERROR') {
     message,
     type,
   };
-  // Mantém no máximo os últimos 100 logs
-  const updatedLogs = [newLog, ...logs].slice(0, 100);
+  // Mantém no máximo os últimos 50 logs
+  const updatedLogs = [newLog, ...logs].slice(0, 50);
   await chrome.storage.local.set({ logs: updatedLogs });
 }
 
@@ -118,6 +117,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'cookie-collector') {
     startIntegration();
   }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  startIntegration();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  startIntegration();
 });
 
 console.log('Background script carregado e pronto.');
