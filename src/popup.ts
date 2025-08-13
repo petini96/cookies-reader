@@ -68,6 +68,17 @@ async function updateStatus(statusDiv: HTMLDivElement) {
   }
 }
 
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'cookie-collector') {
+    const statusDiv = document.getElementById('status') as HTMLDivElement;
+    if (statusDiv) {
+      // Adiciona um pequeno atraso para garantir que o novo horário do alarme esteja disponível
+      // e para que a mensagem "Aguarde..." seja brevemente visível.
+      setTimeout(() => updateStatus(statusDiv), 1000);
+    }
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start') as HTMLButtonElement;
   const stopBtn = document.getElementById('stop') as HTMLButtonElement;
