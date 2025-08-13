@@ -75,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const logsLink = document.getElementById('logsLink') as HTMLAnchorElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
   const resetBtn = document.getElementById('reset-metrics') as HTMLButtonElement;
-  const openInNewTabBtn = document.getElementById('open-in-new-tab') as HTMLButtonElement;
 
   startBtn.addEventListener('click', async () => {
     // Pega o intervalo em segundos do storage, com um padrão de 60s
@@ -106,10 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Opcional: notifica o usuário
       resetBtn.textContent = 'Limpo!';
       setTimeout(() => { resetBtn.textContent = 'Resetar'; }, 1500);
-  });
-
-  openInNewTabBtn.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'popup.html' });
   });
 
   // Funções iniciais ao abrir o popup

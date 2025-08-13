@@ -119,14 +119,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-chrome.runtime.onInstalled.addListener(() => {
-  startIntegration();
-});
-
-chrome.runtime.onStartup.addListener(() => {
-  startIntegration();
-});
-
 console.log('Background script carregado e pronto.');
 
 export {};
