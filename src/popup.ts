@@ -64,7 +64,9 @@ async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElem
       const countdownEl = document.getElementById('countdown');
       if(countdownEl) countdownEl.textContent = '--:--';
       const popupIcon = document.getElementById('popupIcon') as HTMLImageElement;
-      if(popupIcon) popupIcon.src = "images/icon128.png"; // Reset icon when inactive
+      if(popupIcon && popupIcon.src.endsWith("images/loading.gif")) { 
+          popupIcon.src = "images/icon128.png"; // Reset icon when inactive
+      }
     }
   } catch (error) {
     console.error("Erro ao tentar atualizar o status:", error);
@@ -73,12 +75,29 @@ async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElem
   }
 }
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'cookie-collector') {
+
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "pauseCountdown") {
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null; // Clear the interval ID
+    }
+    const countdownEl = document.getElementById('countdown');
+    if (countdownEl) {
+      countdownEl.textContent = "Aguardando resposta..."; // Or "Processando..."
+      const popupIcon = document.getElementById('popupIcon') as HTMLImageElement;
+      if (popupIcon && popupIcon.src.endsWith("images/icon128.png")) {
+          popupIcon.src = "images/loading.gif"; // Show loading animation
+      }
+    }
+  } else if (request.action === "resumeCountdown") {
+    // Restart the countdown. The updateStatus function already calls startCountdown.
+    // So, I just need to ensure updateStatus is called.
     const statusDiv = document.getElementById('status') as HTMLDivElement;
     const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
     if (statusDiv && toggleBtn) {
-      setTimeout(() => updateStatus(statusDiv, toggleBtn), 1000);
+      updateStatus(statusDiv, toggleBtn);
     }
   }
 });

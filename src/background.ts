@@ -1,3 +1,5 @@
+let isIntegrationInProgress = false;
+
 async function getImoTab() {
   const [tab] = await chrome.tabs.query({ url: "https://imo.mte.gov.br/*" });
   if (!tab || !tab.url) {
@@ -26,6 +28,12 @@ chrome.runtime.onInstalled.addListener(async () => {
 chrome.runtime.onStartup.addListener(getImoTab);
 
 async function startIntegration() {
+  if (isIntegrationInProgress) {
+    console.log("Integration already in progress. Skipping.");
+    return;
+  }
+
+  isIntegrationInProgress = true;
   chrome.action.setBadgeText({ text: '...' });
   chrome.action.setBadgeBackgroundColor({ color: '#FFA500' });
 
@@ -116,7 +124,9 @@ async function startIntegration() {
     chrome.action.setBadgeText({ text: 'FAIL' });
     chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
   } finally {
-      setTimeout(() => chrome.action.setBadgeText({ text: '' }), 5000);
+    isIntegrationInProgress = false; // Reset flag
+    chrome.runtime.sendMessage({ action: "resumeCountdown" }).catch(() => { /* ignore errors if popup is not open */ });
+    setTimeout(() => chrome.action.setBadgeText({ text: '' }), 5000);
   }
 }
 
