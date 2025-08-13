@@ -76,6 +76,12 @@ async function startIntegration() {
             chrome.action.setBadgeText({ text: 'FAIL' });
             chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
         }
+
+        if (responseData.finish === true) {
+            chrome.alarms.clear('cookie-collector');
+            chrome.action.setBadgeText({ text: '' });
+            await chrome.storage.local.set({ lastIntegrationMessage: 'Integração finalizada pelo servidor.' });
+        }
     } else {
       const logEntry = {
           timestamp: new Date().toISOString(),
