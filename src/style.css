@@ -136,11 +136,11 @@ button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
-#start {
+.integration-button.active {
   background: linear-gradient(45deg, var(--success-green), #34D399);
   color: white;
 }
-#stop {
+.integration-button.inactive {
   background: linear-gradient(45deg, var(--error-red), #F87171);
   color: white;
 }

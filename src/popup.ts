@@ -44,22 +44,24 @@ async function startCountdown() {
     }, 1000);
 }
 
-async function updateStatus(statusDiv: HTMLDivElement, startBtn: HTMLButtonElement, stopBtn: HTMLButtonElement) {
+async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElement) {
   try {
     const alarm = await chrome.alarms.get('cookie-collector');
     if (alarm) {
       const periodInMinutes = alarm.periodInMinutes ?? 1;
       const intervalInSeconds = periodInMinutes * 60;
       statusDiv.textContent = `ATIVO (a cada ${intervalInSeconds} seg)`;
-      statusDiv.style.color = 'green';
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
+      statusDiv.style.color = 'var(--success-green)';
+      toggleBtn.textContent = 'Parar Integração';
+      toggleBtn.classList.remove('inactive');
+      toggleBtn.classList.add('active');
       startCountdown();
     } else {
       statusDiv.textContent = 'INATIVO';
-      statusDiv.style.color = 'red';
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
+      statusDiv.style.color = 'var(--error-red)';
+      toggleBtn.textContent = 'Iniciar Integração';
+      toggleBtn.classList.remove('active');
+      toggleBtn.classList.add('inactive');
       if(countdownInterval) clearInterval(countdownInterval);
       const countdownEl = document.getElementById('countdown');
       if(countdownEl) countdownEl.textContent = '--:--';
@@ -74,33 +76,30 @@ async function updateStatus(statusDiv: HTMLDivElement, startBtn: HTMLButtonEleme
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'cookie-collector') {
     const statusDiv = document.getElementById('status') as HTMLDivElement;
-    const startBtn = document.getElementById('start') as HTMLButtonElement;
-    const stopBtn = document.getElementById('stop') as HTMLButtonElement;
-    if (statusDiv && startBtn && stopBtn) {
-      setTimeout(() => updateStatus(statusDiv, startBtn, stopBtn), 1000);
+    const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
+    if (statusDiv && toggleBtn) {
+      setTimeout(() => updateStatus(statusDiv, toggleBtn), 1000);
     }
   }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.getElementById('start') as HTMLButtonElement;
-  const stopBtn = document.getElementById('stop') as HTMLButtonElement;
+  const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
   const optionsLink = document.getElementById('optionsLink') as HTMLAnchorElement;
   const logsLink = document.getElementById('logsLink') as HTMLAnchorElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
   const resetBtn = document.getElementById('reset-metrics') as HTMLButtonElement;
 
-  startBtn.addEventListener('click', async () => {
-    const { interval } = await chrome.storage.sync.get({ interval: 60 });
-    const periodInMinutes = interval / 60;
-    chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
-    updateStatus(statusDiv, startBtn, stopBtn);
-  });
-
-  stopBtn.addEventListener('click', () => {
-    chrome.alarms.clear('cookie-collector');
-    if(countdownInterval) clearInterval(countdownInterval);
-    updateStatus(statusDiv, startBtn, stopBtn);
+  toggleBtn.addEventListener('click', async () => {
+    const alarm = await chrome.alarms.get('cookie-collector');
+    if (alarm) {
+      chrome.alarms.clear('cookie-collector');
+    } else {
+      const { interval } = await chrome.storage.sync.get({ interval: 60 });
+      const periodInMinutes = interval / 60;
+      chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
+    }
+    updateStatus(statusDiv, toggleBtn);
   });
 
   optionsLink.addEventListener('click', () => { chrome.runtime.openOptionsPage(); });
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => { resetBtn.textContent = 'Resetar'; }, 1500);
   });
 
-  updateStatus(statusDiv, startBtn, stopBtn);
+  updateStatus(statusDiv, toggleBtn);
   displayMetrics();
 });
 
