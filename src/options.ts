@@ -4,7 +4,7 @@ const saveButton = document.getElementById('save') as HTMLButtonElement;
 const statusDiv = document.getElementById('status-options') as HTMLDivElement;
 
 function saveOptions() {
-  const interval = parseInt(intervalInput.value, 20);
+  const interval = parseInt(intervalInput.value, 10);
   const webhookUrl = webhookUrlInput.value.trim();
 
   if (isNaN(interval) || interval < 10) {
@@ -24,7 +24,6 @@ function saveOptions() {
       statusDiv.textContent = 'Configurações salvas com sucesso!';
       statusDiv.style.color = 'var(--success-green)';
 
-      // Limpa a mensagem após 5 segundos
       setTimeout(() => {
         statusDiv.textContent = '';
       }, 5000);
@@ -34,7 +33,7 @@ function saveOptions() {
 
 function restoreOptions() {
   chrome.storage.sync.get(
-    { interval: 20, webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' },
+    { interval: 10, webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' },
     (items) => {
       intervalInput.value = items.interval;
       webhookUrlInput.value = items.webhookUrl;

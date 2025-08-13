@@ -67,7 +67,6 @@ async function startIntegration() {
     });
 
     const responseData = await response.json();
-    console.log(responseData);
 
     const logStatus = responseData.status?.toLowerCase() === 'ok' ? 'SUCCESS' : 'FAIL';
 

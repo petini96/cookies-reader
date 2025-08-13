@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (alarm) {
       chrome.alarms.clear('cookie-collector');
     } else {
-      const { interval } = await chrome.storage.sync.get({ interval: 20 });
+      const { interval } = await chrome.storage.sync.get({ interval: 10 });
       const periodInMinutes = interval / 60;
-      chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.5, periodInMinutes) });
+      chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(1 / 60, periodInMinutes) });
     }
     updateStatus(statusDiv, toggleBtn);
   });
