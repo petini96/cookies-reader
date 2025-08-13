@@ -44,19 +44,22 @@ async function startCountdown() {
     }, 1000);
 }
 
-async function updateStatus(statusDiv: HTMLDivElement) {
+async function updateStatus(statusDiv: HTMLDivElement, startBtn: HTMLButtonElement, stopBtn: HTMLButtonElement) {
   try {
     const alarm = await chrome.alarms.get('cookie-collector');
     if (alarm) {
-      // Usamos alarm.periodInMinutes que foi usado para criar o alarme
-      const periodInMinutes = alarm.periodInMinutes ?? 1; // fallback to 1 minute if undefined
+      const periodInMinutes = alarm.periodInMinutes ?? 1;
       const intervalInSeconds = periodInMinutes * 60;
       statusDiv.textContent = `ATIVO (a cada ${intervalInSeconds} seg)`;
       statusDiv.style.color = 'green';
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
       startCountdown();
     } else {
       statusDiv.textContent = 'INATIVO';
       statusDiv.style.color = 'red';
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
       if(countdownInterval) clearInterval(countdownInterval);
       const countdownEl = document.getElementById('countdown');
       if(countdownEl) countdownEl.textContent = '--:--';
@@ -71,10 +74,10 @@ async function updateStatus(statusDiv: HTMLDivElement) {
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'cookie-collector') {
     const statusDiv = document.getElementById('status') as HTMLDivElement;
-    if (statusDiv) {
-      // Adiciona um pequeno atraso para garantir que o novo horário do alarme esteja disponível
-      // e para que a mensagem "Aguarde..." seja brevemente visível.
-      setTimeout(() => updateStatus(statusDiv), 1000);
+    const startBtn = document.getElementById('start') as HTMLButtonElement;
+    const stopBtn = document.getElementById('stop') as HTMLButtonElement;
+    if (statusDiv && startBtn && stopBtn) {
+      setTimeout(() => updateStatus(statusDiv, startBtn, stopBtn), 1000);
     }
   }
 });
@@ -88,20 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = document.getElementById('reset-metrics') as HTMLButtonElement;
 
   startBtn.addEventListener('click', async () => {
-    // Pega o intervalo em segundos do storage, com um padrão de 60s
     const { interval } = await chrome.storage.sync.get({ interval: 60 });
-    // A API de alarme usa minutos, então convertemos. Chrome aceita valores fracionados.
     const periodInMinutes = interval / 60;
-
-    // Para evitar spam, o Chrome impõe um limite. 0.1 min (6s) é um valor seguro.
     chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
-    updateStatus(statusDiv);
+    updateStatus(statusDiv, startBtn, stopBtn);
   });
 
   stopBtn.addEventListener('click', () => {
     chrome.alarms.clear('cookie-collector');
-    if(countdownInterval) clearInterval(countdownInterval); // Para o cronômetro imediatamente
-    updateStatus(statusDiv);
+    if(countdownInterval) clearInterval(countdownInterval);
+    updateStatus(statusDiv, startBtn, stopBtn);
   });
 
   optionsLink.addEventListener('click', () => { chrome.runtime.openOptionsPage(); });
@@ -113,13 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
   resetBtn.addEventListener('click', async () => {
       await chrome.storage.local.set({ attempts: 0, successes: 0, errors: 0, logs: [], lastIntegrationMessage: '' });
       displayMetrics();
-      // Opcional: notifica o usuário
       resetBtn.textContent = 'Limpo!';
       setTimeout(() => { resetBtn.textContent = 'Resetar'; }, 1500);
   });
 
-  // Funções iniciais ao abrir o popup
-  updateStatus(statusDiv);
+  updateStatus(statusDiv, startBtn, stopBtn);
   displayMetrics();
 });
 
