@@ -1,17 +1,11 @@
-let countdownInterval: number | null = null; // Para controlar o nosso cronômetro
+let countdownInterval: number | null = null;
 
-async function displayMetrics() {
-  const attemptsEl = document.getElementById('attempts-count');
-  const successesEl = document.getElementById('success-count');
-  const errorsEl = document.getElementById('error-count');
+async function displayLastMessage() {
   const messageEl = document.getElementById('last-integration-message-content');
+  if (!messageEl) return;
 
-  const data = await chrome.storage.local.get({ attempts: 0, successes: 0, errors: 0, lastIntegrationMessage: '' });
-
-  if(attemptsEl) attemptsEl.textContent = data.attempts.toString();
-  if(successesEl) successesEl.textContent = data.successes.toString();
-  if(errorsEl) errorsEl.textContent = data.errors.toString();
-  if(messageEl) messageEl.textContent = data.lastIntegrationMessage;
+  const data = await chrome.storage.local.get({ lastIntegrationMessage: 'Nenhuma integração executada ainda.' });
+  messageEl.textContent = data.lastIntegrationMessage;
 }
 
 function formatTime(seconds: number): string {
@@ -83,19 +77,24 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.lastIntegrationMessage) {
+    displayLastMessage();
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
   const optionsLink = document.getElementById('optionsLink') as HTMLAnchorElement;
   const logsLink = document.getElementById('logsLink') as HTMLAnchorElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
-  const resetBtn = document.getElementById('reset-metrics') as HTMLButtonElement;
 
   toggleBtn.addEventListener('click', async () => {
     const alarm = await chrome.alarms.get('cookie-collector');
     if (alarm) {
       chrome.alarms.clear('cookie-collector');
     } else {
-      const { interval } = await chrome.storage.sync.get({ interval: 60 });
+      const { interval } = await chrome.storage.sync.get({ interval: 20 });
       const periodInMinutes = interval / 60;
       chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
     }
@@ -108,15 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
       chrome.tabs.create({ url: 'logs.html' });
   });
 
-  resetBtn.addEventListener('click', async () => {
-      await chrome.storage.local.set({ attempts: 0, successes: 0, errors: 0, logs: [], lastIntegrationMessage: '' });
-      displayMetrics();
-      resetBtn.textContent = 'Limpo!';
-      setTimeout(() => { resetBtn.textContent = 'Resetar'; }, 1500);
-  });
-
   updateStatus(statusDiv, toggleBtn);
-  displayMetrics();
+  displayLastMessage();
 });
 
 export {};
