@@ -7,9 +7,8 @@ function saveOptions() {
   const interval = parseInt(intervalInput.value, 10);
   const webhookUrl = webhookUrlInput.value.trim();
 
-  // Validação
-  if (isNaN(interval) || interval < 5) {
-    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 5 segundos.';
+  if (isNaN(interval) || interval < 10) {
+    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 10 segundos.';
     statusDiv.style.color = 'var(--error-red)';
     return;
   }
@@ -22,11 +21,9 @@ function saveOptions() {
   chrome.storage.sync.set(
     { interval, webhookUrl },
     () => {
-      // Exibe a mensagem de sucesso com estilo
       statusDiv.textContent = 'Configurações salvas com sucesso!';
       statusDiv.style.color = 'var(--success-green)';
-      
-      // Limpa a mensagem após 5 segundos
+
       setTimeout(() => {
         statusDiv.textContent = '';
       }, 5000);
@@ -36,7 +33,7 @@ function saveOptions() {
 
 function restoreOptions() {
   chrome.storage.sync.get(
-    { interval: 15, webhookUrl: '' }, // Padrão de 15 segundos
+    { interval: 10, webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' },
     (items) => {
       intervalInput.value = items.interval;
       webhookUrlInput.value = items.webhookUrl;

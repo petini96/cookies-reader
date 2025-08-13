@@ -1,8 +1,12 @@
-function formatLogTimestamp(isoString: string): string {
-    return new Date(isoString).toLocaleString('pt-BR', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
+function getStatusClass(status: string): string {
+    const s = status.toLowerCase();
+    if (s === 'success' || s === 'ok') {
+        return 'log-type-success';
+    }
+    if (s === 'fail' || s === 'error') {
+        return 'log-type-error';
+    }
+    return 'log-type-info';
 }
 
 async function displayLogs() {
@@ -10,45 +14,42 @@ async function displayLogs() {
     if (!logsContent) return;
 
     const { logs = [] } = await chrome.storage.local.get('logs');
-    
+
+    logsContent.innerHTML = '';
+
     if (logs.length === 0) {
-        logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado. Inicie uma captura.</div>';
+        logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado.</div>';
         return;
     }
 
-    logsContent.innerHTML = logs.map((log: any) => `
-        <div class="log-item log-type-${log.type.toLowerCase()}">
-            <span class="log-timestamp">${formatLogTimestamp(log.timestamp)}</span>
-            <span class="log-type">[${log.type}]</span>
-            <span class="log-message">${log.message}</span>
-        </div>
-    `).join('');
+    for (const log of logs) {
+        const logItem = document.createElement('div');
+        logItem.className = 'log-item';
 
-    // Rola para o log mais recente (o primeiro item)
-    logsContent.scrollTop = 0; 
+        const timestamp = new Date(log.timestamp).toLocaleString('pt-BR');
+        const statusClass = getStatusClass(log.status);
+
+        logItem.innerHTML = `
+            <span class="log-timestamp">${timestamp}</span>
+            <span class="log-type ${statusClass}">${log.status.toUpperCase()}</span>
+            <span class="log-message">${log.message}</span>
+        `;
+
+        logsContent.appendChild(logItem);
+    }
 }
 
-// --- LÓGICA DE ATUALIZAÇÃO EM TEMPO REAL ---
-
-// Ouve por mudanças no chrome.storage
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    // Verifica se a mudança foi nos 'logs' e no armazenamento 'local'
-    if (namespace === 'local' && changes.logs) {
-        console.log('Logs atualizados, redesenhando a tela.');
-        displayLogs(); // Chama a função para redesenhar os logs
-    }
-});
-
-// Listener para o botão de limpar logs
-document.getElementById('clear-logs')?.addEventListener('click', async () => {
+async function clearLogs() {
     await chrome.storage.local.set({ logs: [] });
-    // A linha acima vai disparar o 'onChanged', então displayLogs() será chamado automaticamente.
+    await displayLogs();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const clearButton = document.getElementById('clear-logs');
+    if (clearButton) {
+        clearButton.addEventListener('click', clearLogs);
+    }
+    displayLogs();
 });
-
-// Listener para o botão de atualizar (pode ser mantido por segurança ou removido do HTML)
-document.getElementById('refresh-logs')?.addEventListener('click', displayLogs);
-
-// Carrega os logs quando a página abre pela primeira vez
-document.addEventListener('DOMContentLoaded', displayLogs);
 
 export {};

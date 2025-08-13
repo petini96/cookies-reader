@@ -1,15 +1,11 @@
-let countdownInterval: number | null = null; // Para controlar o nosso cronômetro
+let countdownInterval: number | null = null;
 
-async function displayMetrics() {
-  const attemptsEl = document.getElementById('attempts-count');
-  const successesEl = document.getElementById('success-count');
-  const errorsEl = document.getElementById('error-count');
+async function displayLastMessage() {
+  const messageEl = document.getElementById('last-integration-message-content');
+  if (!messageEl) return;
 
-  const metrics = await chrome.storage.local.get({ attempts: 0, successes: 0, errors: 0 });
-
-  if(attemptsEl) attemptsEl.textContent = metrics.attempts.toString();
-  if(successesEl) successesEl.textContent = metrics.successes.toString();
-  if(errorsEl) errorsEl.textContent = metrics.errors.toString();
+  const data = await chrome.storage.local.get({ lastIntegrationMessage: 'Nenhuma integração executada ainda.' });
+  messageEl.textContent = data.lastIntegrationMessage;
 }
 
 function formatTime(seconds: number): string {
@@ -21,13 +17,15 @@ function formatTime(seconds: number): string {
 
 async function startCountdown() {
     const countdownEl = document.getElementById('countdown');
-    if (!countdownEl) return;
+    const popupIcon = document.getElementById('popupIcon') as HTMLImageElement; // Get the image element
+    if (!countdownEl || !popupIcon) return;
 
     if (countdownInterval) clearInterval(countdownInterval);
 
     const alarm = await chrome.alarms.get('cookie-collector');
     if (!alarm) {
         countdownEl.textContent = "--:--";
+        popupIcon.src = "images/icon128.png";
         return;
     }
 
@@ -35,29 +33,38 @@ async function startCountdown() {
         const remainingSeconds = (alarm.scheduledTime - Date.now()) / 1000;
         if (remainingSeconds > 0) {
             countdownEl.textContent = formatTime(remainingSeconds);
+            popupIcon.src = "images/icon128.png"; // Static icon when counting down
         } else {
             countdownEl.textContent = "Aguarde...";
+            popupIcon.src = "images/loading.gif"; // Animated icon when waiting
             if (countdownInterval) clearInterval(countdownInterval);
         }
     }, 1000);
 }
 
-async function updateStatus(statusDiv: HTMLDivElement) {
+async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElement) {
   try {
     const alarm = await chrome.alarms.get('cookie-collector');
     if (alarm) {
-      // Usamos alarm.periodInMinutes que foi usado para criar o alarme
-      const periodInMinutes = alarm.periodInMinutes ?? 1; // fallback to 1 minute if undefined
+      const periodInMinutes = alarm.periodInMinutes ?? 1;
       const intervalInSeconds = periodInMinutes * 60;
       statusDiv.textContent = `ATIVO (a cada ${intervalInSeconds} seg)`;
-      statusDiv.style.color = 'green';
+      statusDiv.style.color = 'var(--success-green)';
+      toggleBtn.textContent = 'Parar Integração';
+      toggleBtn.classList.remove('inactive');
+      toggleBtn.classList.add('active');
       startCountdown();
     } else {
       statusDiv.textContent = 'INATIVO';
-      statusDiv.style.color = 'red';
+      statusDiv.style.color = 'var(--error-red)';
+      toggleBtn.textContent = 'Iniciar Integração';
+      toggleBtn.classList.remove('active');
+      toggleBtn.classList.add('inactive');
       if(countdownInterval) clearInterval(countdownInterval);
       const countdownEl = document.getElementById('countdown');
       if(countdownEl) countdownEl.textContent = '--:--';
+      const popupIcon = document.getElementById('popupIcon') as HTMLImageElement;
+      if(popupIcon) popupIcon.src = "images/icon128.png"; // Reset icon when inactive
     }
   } catch (error) {
     console.error("Erro ao tentar atualizar o status:", error);
@@ -66,29 +73,38 @@ async function updateStatus(statusDiv: HTMLDivElement) {
   }
 }
 
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'cookie-collector') {
+    const statusDiv = document.getElementById('status') as HTMLDivElement;
+    const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
+    if (statusDiv && toggleBtn) {
+      setTimeout(() => updateStatus(statusDiv, toggleBtn), 1000);
+    }
+  }
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.lastIntegrationMessage) {
+    displayLastMessage();
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.getElementById('start') as HTMLButtonElement;
-  const stopBtn = document.getElementById('stop') as HTMLButtonElement;
+  const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
   const optionsLink = document.getElementById('optionsLink') as HTMLAnchorElement;
   const logsLink = document.getElementById('logsLink') as HTMLAnchorElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
-  const resetBtn = document.getElementById('reset-metrics') as HTMLButtonElement;
 
-  startBtn.addEventListener('click', async () => {
-    // Pega o intervalo em segundos do storage, com um padrão de 60s
-    const { interval } = await chrome.storage.sync.get({ interval: 60 });
-    // A API de alarme usa minutos, então convertemos. Chrome aceita valores fracionados.
-    const periodInMinutes = interval / 60;
-    
-    // Para evitar spam, o Chrome impõe um limite. 0.1 min (6s) é um valor seguro.
-    chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
-    updateStatus(statusDiv);
-  });
-
-  stopBtn.addEventListener('click', () => {
-    chrome.alarms.clear('cookie-collector');
-    if(countdownInterval) clearInterval(countdownInterval); // Para o cronômetro imediatamente
-    updateStatus(statusDiv);
+  toggleBtn.addEventListener('click', async () => {
+    const alarm = await chrome.alarms.get('cookie-collector');
+    if (alarm) {
+      chrome.alarms.clear('cookie-collector');
+    } else {
+      const { interval } = await chrome.storage.sync.get({ interval: 10 });
+      const periodInMinutes = interval / 60;
+      chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(1 / 60, periodInMinutes) });
+    }
+    updateStatus(statusDiv, toggleBtn);
   });
 
   optionsLink.addEventListener('click', () => { chrome.runtime.openOptionsPage(); });
@@ -97,17 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
       chrome.tabs.create({ url: 'logs.html' });
   });
 
-  resetBtn.addEventListener('click', async () => {
-      await chrome.storage.local.set({ attempts: 0, successes: 0, errors: 0, logs: [] });
-      displayMetrics();
-      // Opcional: notifica o usuário
-      resetBtn.textContent = 'Limpo!';
-      setTimeout(() => { resetBtn.textContent = 'Resetar'; }, 1500);
-  });
-
-  // Funções iniciais ao abrir o popup
-  updateStatus(statusDiv);
-  displayMetrics();
+  updateStatus(statusDiv, toggleBtn);
+  displayLastMessage();
 });
 
 export {};

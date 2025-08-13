@@ -1,6 +1,6 @@
-# Coletor de Cookies para Webhook
+# Integrador de pessoas entre msqualifica.ms.gov.br com IMO
 
-Uma extensão para o Google Chrome que captura cookies de uma aba ativa em intervalos de tempo configuráveis e os envia para um webhook (como n8n, Zapier, etc.) para automação e integração de dados.
+Uma extensão para o Google Chrome que integra o MSQD com o IMO utlizando fluxos do n8n.
 
 ## ✨ Funcionalidades
 
@@ -23,8 +23,9 @@ Siga os passos abaixo para instalar e rodar a extensão em seu ambiente de desen
 
 1.  **Clone o Repositório:**
     ```bash
-    git clone [https://github.com/petini96/cookies-reader.git](https://github.com/petini96/cookies-reader.git)
-    cd cookies-reader
+    git clone [https://github.com/ferlete/msqd-imo.git](https://github.
+    com/ferlete/msqd-imo.git)
+    cd msqd-imo
     ```
 
 2.  **Instale as Dependências:**

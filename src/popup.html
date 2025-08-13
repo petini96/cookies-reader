@@ -1,46 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Controle do Coletor</title>
+    <title>Integrador MSQD->IMO</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="popup-container">
         <div class="popup-header">
-            <img src="images/icon128.png" alt="Ícone de Cookie" class="popup-icon">
-            <h1>Controle do Coletor</h1>
+            <img id="popupIcon" src="images/icon128.png" alt="Ícone de Integrador" class="popup-icon">
+            <h1>Integrador MSQD->IMO</h1>
         </div>
 
         <div id="status" class="status"></div>
 
         <div class="metrics-dashboard">
             <div class="countdown-container">
-                <div class="countdown-label">PRÓXIMA CAPTURA</div>
+                <div class="countdown-label">PRÓXIMA INTEGRAÇÃO</div>
                 <div id="countdown" class="countdown-timer">--:--</div>
             </div>
-            <div class="metrics-grid">
-                <div class="metric-item">
-                    <span class="metric-label">Tentativas</span>
-                    <span id="attempts-count" class="metric-value">0</span>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-label">Sucessos</span>
-                    <span id="success-count" class="metric-value">0</span>
-                </div>
-                <div class="metric-item">
-                    <span class="metric-label">Erros</span>
-                    <span id="error-count" class="metric-value">0</span>
-                </div>
-                <div class="metric-item">
-                    <button id="reset-metrics" class="reset-button">Resetar</button>
-                </div>
+            <div id="last-integration-message" class="integration-message">
+                <span class="metric-label">Status:</span>
+                <span id="last-integration-message-content" class="metric-value">...</span>
             </div>
+
         </div>
-        
+
         <div class="controls">
-            <button id="start">Iniciar Captura</button>
-            <button id="stop">Parar Captura</button>
+            <button id="toggle-integration" class="integration-button inactive">Iniciar Integração</button>
         </div>
 
         <a href="#" id="optionsLink" class="options-link">Abrir Configurações</a>
