@@ -15,7 +15,7 @@ async function displayLogs() {
 
     const { logs = [] } = await chrome.storage.local.get('logs');
 
-    logsContent.innerHTML = ''; // Limpa a visualização atual
+    logsContent.innerHTML = '';
 
     if (logs.length === 0) {
         logsContent.innerHTML = '<div class="log-item">Nenhum log encontrado.</div>';
@@ -41,7 +41,7 @@ async function displayLogs() {
 
 async function clearLogs() {
     await chrome.storage.local.set({ logs: [] });
-    await displayLogs(); // Re-renderiza a view, que agora mostrará a mensagem de "nenhum log"
+    await displayLogs();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

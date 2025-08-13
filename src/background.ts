@@ -1,11 +1,17 @@
 async function addNewLogEntry(logEntry: { timestamp: string; status: string; message: string; }) {
   const { logs = [] } = await chrome.storage.local.get('logs');
-  // Mantém no máximo os últimos 100 logs
   const updatedLogs = [logEntry, ...logs].slice(0, 100);
   await chrome.storage.local.set({ logs: updatedLogs });
 }
 
-// Função principal que captura e envia o cookie
+chrome.runtime.onInstalled.addListener(async () => {
+  const { webhookUrl } = await chrome.storage.sync.get('webhookUrl');
+  if (!webhookUrl) {
+    await chrome.storage.sync.set({ webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' });
+    console.log('Default webhookUrl set.');
+  }
+});
+
 async function startIntegration() {
   chrome.action.setBadgeText({ text: '...' });
   chrome.action.setBadgeBackgroundColor({ color: '#FFA500' });
@@ -22,7 +28,6 @@ async function startIntegration() {
 
   const [tab] = await chrome.tabs.query({ url: "https://imo.mte.gov.br/*" });
   if (!tab || !tab.url) {
-    // Não é um erro, apenas informativo. Não cria log poluindo a tela.
     await chrome.storage.local.set({ lastIntegrationMessage: 'Aba do IMO não encontrada. Verifique se está aberta.' });
     chrome.action.setBadgeText({ text: '' });
     return;
@@ -35,7 +40,6 @@ async function startIntegration() {
     });
 
     if (!jsessionidCookie) {
-      // Também informativo, pode ser que o usuário não esteja logado.
       await chrome.storage.local.set({ lastIntegrationMessage: `Cookie JSESSIONID não encontrado. Faça o login no IMO.` });
       chrome.action.setBadgeText({ text: '' });
       return;
@@ -52,14 +56,14 @@ async function startIntegration() {
     });
 
     const responseData = await response.json();
-    console.log(responseData.response);
+    console.log(responseData);
 
-    const logStatus = responseData.response?.toLowerCase() === 'ok' ? 'SUCCESS' : 'FAIL';
+    const logStatus = responseData.status?.toLowerCase() === 'ok' ? 'SUCCESS' : 'FAIL';
 
     if (response.ok) {
         const logEntry = {
             timestamp: new Date().toISOString(),
-            status: responseData.response || 'FAIL',
+            status: logStatus,
             message: responseData.message || 'Resposta sem mensagem.'
         };
         await addNewLogEntry(logEntry);

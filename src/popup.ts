@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       const { interval } = await chrome.storage.sync.get({ interval: 20 });
       const periodInMinutes = interval / 60;
-      chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.1, periodInMinutes) });
+      chrome.alarms.create('cookie-collector', { periodInMinutes: Math.max(0.5, periodInMinutes) });
     }
     updateStatus(statusDiv, toggleBtn);
   });
