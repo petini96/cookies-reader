@@ -33,10 +33,10 @@ async function startCountdown() {
         const remainingSeconds = (alarm.scheduledTime - Date.now()) / 1000;
         if (remainingSeconds > 0) {
             countdownEl.textContent = formatTime(remainingSeconds);
-            popupIcon.src = "images/icon128.png"; // Static icon when counting down
+            popupIcon.src = "images/icon128.png";
         } else {
             countdownEl.textContent = "Aguarde...";
-            popupIcon.src = "images/loading.gif"; // Animated icon when waiting
+            popupIcon.src = "images/loading.gif";
             if (countdownInterval) clearInterval(countdownInterval);
         }
     }, 1000);
@@ -65,7 +65,7 @@ async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElem
       if(countdownEl) countdownEl.textContent = '--:--';
       const popupIcon = document.getElementById('popupIcon') as HTMLImageElement;
       if(popupIcon && popupIcon.src.endsWith("images/loading.gif")) { 
-          popupIcon.src = "images/icon128.png"; // Reset icon when inactive
+          popupIcon.src = "images/icon128.png";
       }
     }
   } catch (error) {
@@ -75,25 +75,21 @@ async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElem
   }
 }
 
-
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "pauseCountdown") {
     if (countdownInterval) {
       clearInterval(countdownInterval);
-      countdownInterval = null; // Clear the interval ID
+      countdownInterval = null;
     }
     const countdownEl = document.getElementById('countdown');
     if (countdownEl) {
-      countdownEl.textContent = "Aguardando resposta..."; // Or "Processando..."
+      countdownEl.textContent = "Aguardando resposta...";
       const popupIcon = document.getElementById('popupIcon') as HTMLImageElement;
       if (popupIcon && popupIcon.src.endsWith("images/icon128.png")) {
-          popupIcon.src = "images/loading.gif"; // Show loading animation
+          popupIcon.src = "images/loading.gif";
       }
     }
   } else if (request.action === "resumeCountdown") {
-    // Restart the countdown. The updateStatus function already calls startCountdown.
-    // So, I just need to ensure updateStatus is called.
     const statusDiv = document.getElementById('status') as HTMLDivElement;
     const toggleBtn = document.getElementById('toggle-integration') as HTMLButtonElement;
     if (statusDiv && toggleBtn) {
