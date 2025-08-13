@@ -17,13 +17,15 @@ function formatTime(seconds: number): string {
 
 async function startCountdown() {
     const countdownEl = document.getElementById('countdown');
-    if (!countdownEl) return;
+    const popupIcon = document.getElementById('popupIcon') as HTMLImageElement; // Get the image element
+    if (!countdownEl || !popupIcon) return;
 
     if (countdownInterval) clearInterval(countdownInterval);
 
     const alarm = await chrome.alarms.get('cookie-collector');
     if (!alarm) {
         countdownEl.textContent = "--:--";
+        popupIcon.src = "images/icon128.png";
         return;
     }
 
@@ -31,8 +33,10 @@ async function startCountdown() {
         const remainingSeconds = (alarm.scheduledTime - Date.now()) / 1000;
         if (remainingSeconds > 0) {
             countdownEl.textContent = formatTime(remainingSeconds);
+            popupIcon.src = "images/icon128.png"; // Static icon when counting down
         } else {
             countdownEl.textContent = "Aguarde...";
+            popupIcon.src = "images/loading.gif"; // Animated icon when waiting
             if (countdownInterval) clearInterval(countdownInterval);
         }
     }, 1000);
@@ -59,6 +63,8 @@ async function updateStatus(statusDiv: HTMLDivElement, toggleBtn: HTMLButtonElem
       if(countdownInterval) clearInterval(countdownInterval);
       const countdownEl = document.getElementById('countdown');
       if(countdownEl) countdownEl.textContent = '--:--';
+      const popupIcon = document.getElementById('popupIcon') as HTMLImageElement;
+      if(popupIcon) popupIcon.src = "images/icon128.png"; // Reset icon when inactive
     }
   } catch (error) {
     console.error("Erro ao tentar atualizar o status:", error);

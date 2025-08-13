@@ -1,3 +1,13 @@
+async function getImoTab() {
+  const [tab] = await chrome.tabs.query({ url: "https://imo.mte.gov.br/*" });
+  if (!tab || !tab.url) {
+    await chrome.storage.local.set({ lastIntegrationMessage: 'Aba do IMO não encontrada. Verifique se está aberta.' });
+    chrome.action.setBadgeText({ text: '' });
+    return null;
+  }
+  return tab;
+}
+
 async function addNewLogEntry(logEntry: { timestamp: string; status: string; message: string; }) {
   const { logs = [] } = await chrome.storage.local.get('logs');
   const updatedLogs = [logEntry, ...logs].slice(0, 100);
@@ -10,7 +20,10 @@ chrome.runtime.onInstalled.addListener(async () => {
     await chrome.storage.sync.set({ webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' });
     console.log('Default webhookUrl set.');
   }
+  await getImoTab();
 });
+
+chrome.runtime.onStartup.addListener(getImoTab);
 
 async function startIntegration() {
   chrome.action.setBadgeText({ text: '...' });
@@ -26,16 +39,14 @@ async function startIntegration() {
     return;
   }
 
-  const [tab] = await chrome.tabs.query({ url: "https://imo.mte.gov.br/*" });
-  if (!tab || !tab.url) {
-    await chrome.storage.local.set({ lastIntegrationMessage: 'Aba do IMO não encontrada. Verifique se está aberta.' });
-    chrome.action.setBadgeText({ text: '' });
+  const tab = await getImoTab();
+  if (!tab) {
     return;
   }
 
   try {
     const jsessionidCookie = await chrome.cookies.get({
-      url: tab.url,
+      url: tab.url!,
       name: 'JSESSIONID'
     });
 

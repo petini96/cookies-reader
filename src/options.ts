@@ -4,11 +4,11 @@ const saveButton = document.getElementById('save') as HTMLButtonElement;
 const statusDiv = document.getElementById('status-options') as HTMLDivElement;
 
 function saveOptions() {
-  const interval = parseInt(intervalInput.value, 10);
+  const interval = parseInt(intervalInput.value, 20);
   const webhookUrl = webhookUrlInput.value.trim();
 
-  if (isNaN(interval) || interval < 20) {
-    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 20 segundos.';
+  if (isNaN(interval) || interval < 10) {
+    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 10 segundos.';
     statusDiv.style.color = 'var(--error-red)';
     return;
   }
