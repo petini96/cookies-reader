@@ -34,7 +34,7 @@ function saveOptions() {
 
 function restoreOptions() {
   chrome.storage.sync.get(
-    { interval: 20, webhookUrl: 'https://n8n.msquaifica.ms.gov.br/webhook/imo' },
+    { interval: 20, webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' },
     (items) => {
       intervalInput.value = items.interval;
       webhookUrlInput.value = items.webhookUrl;
