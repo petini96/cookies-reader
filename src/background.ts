@@ -52,12 +52,14 @@ async function startIntegration() {
     });
 
     const responseData = await response.json();
+    console.log(responseData.response);
+
     const logStatus = responseData.response?.toLowerCase() === 'ok' ? 'SUCCESS' : 'FAIL';
 
     if (response.ok) {
-        const logEntry = { 
-            timestamp: new Date().toISOString(), 
-            status: responseData.response || 'FAIL', 
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            status: responseData.response || 'FAIL',
             message: responseData.message || 'Resposta sem mensagem.'
         };
         await addNewLogEntry(logEntry);
@@ -71,9 +73,9 @@ async function startIntegration() {
             chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
         }
     } else {
-      const logEntry = { 
-          timestamp: new Date().toISOString(), 
-          status: 'ERROR', 
+      const logEntry = {
+          timestamp: new Date().toISOString(),
+          status: 'ERROR',
           message: `Falha no envio para webhook: Status ${response.status}`
       };
       await addNewLogEntry(logEntry);
@@ -84,9 +86,9 @@ async function startIntegration() {
 
   } catch (error) {
     const errorMessage = (error instanceof Error) ? error.message : String(error);
-    const logEntry = { 
-        timestamp: new Date().toISOString(), 
-        status: 'ERROR', 
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        status: 'ERROR',
         message: `Erro na execução: ${errorMessage}`
     };
     await addNewLogEntry(logEntry);
