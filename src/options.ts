@@ -7,9 +7,8 @@ function saveOptions() {
   const interval = parseInt(intervalInput.value, 10);
   const webhookUrl = webhookUrlInput.value.trim();
 
-  // Validação
-  if (isNaN(interval) || interval < 60) {
-    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 60 segundos.';
+  if (isNaN(interval) || interval < 20) {
+    statusDiv.textContent = 'Erro: O intervalo deve ser de no mínimo 20 segundos.';
     statusDiv.style.color = 'var(--error-red)';
     return;
   }
@@ -22,7 +21,6 @@ function saveOptions() {
   chrome.storage.sync.set(
     { interval, webhookUrl },
     () => {
-      // Exibe a mensagem de sucesso com estilo
       statusDiv.textContent = 'Configurações salvas com sucesso!';
       statusDiv.style.color = 'var(--success-green)';
 
@@ -36,7 +34,7 @@ function saveOptions() {
 
 function restoreOptions() {
   chrome.storage.sync.get(
-    { interval: 60, webhookUrl: '' }, // Padrão de 60 segundos
+    { interval: 20, webhookUrl: 'https://n8n.msquaifica.ms.gov.br/webhook/imo' },
     (items) => {
       intervalInput.value = items.interval;
       webhookUrlInput.value = items.webhookUrl;
