@@ -26,7 +26,7 @@ function startCountdownVisuals(alarm: chrome.alarms.Alarm, countdownEl: HTMLElem
                 popupIcon.src = "images/icon128.png";
             }
         } else {
-            countdownEl.textContent = "Processando...";
+            countdownEl.textContent = "Integrando...";
             popupIcon.src = "images/loading.gif";
             if (countdownInterval) clearInterval(countdownInterval);
         }
@@ -58,7 +58,7 @@ async function updateUi() {
             // Active, but no alarm -> processing
             statusDiv.textContent = 'ATIVO';
             statusDiv.style.color = 'var(--success-green)';
-            countdownEl.textContent = "Processando...";
+            countdownEl.textContent = "Integrando...";
             popupIcon.src = "images/loading.gif";
             if (countdownInterval) clearInterval(countdownInterval);
         }
