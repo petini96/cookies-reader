@@ -1,5 +1,3 @@
-let isIntegrationInProgress = false;
-
 async function getImoTab() {
   const [tab] = await chrome.tabs.query({ url: "*://imo.mte.gov.br/*" });
   if (!tab || !tab.url) {
@@ -22,18 +20,13 @@ chrome.runtime.onInstalled.addListener(async () => {
     await chrome.storage.sync.set({ webhookUrl: 'https://n8n.msqualifica.ms.gov.br/webhook/imo' });
     console.log('Default webhookUrl set.');
   }
+  await chrome.storage.local.set({ integrationActive: false });
   await getImoTab();
 });
 
 chrome.runtime.onStartup.addListener(getImoTab);
 
 async function startIntegration() {
-  if (isIntegrationInProgress) {
-    console.log("Integration already in progress. Skipping.");
-    return;
-  }
-
-  isIntegrationInProgress = true;
   chrome.action.setBadgeText({ text: '...' });
   chrome.action.setBadgeBackgroundColor({ color: '#FFA500' });
 
@@ -49,6 +42,11 @@ async function startIntegration() {
 
   const tab = await getImoTab();
   if (!tab) {
+    const message = 'Aba do IMO não encontrada. Verifique se está aberta.';
+    await addNewLogEntry({ timestamp: new Date().toISOString(), status: 'ERROR', message });
+    await chrome.storage.local.set({ lastIntegrationMessage: message, integrationActive: false });
+    chrome.alarms.clear('cookie-collector');
+    chrome.runtime.sendMessage({ action: "integrationFinished" }).catch(() => {});
     return;
   }
 
@@ -59,8 +57,12 @@ async function startIntegration() {
     });
 
     if (!jsessionidCookie) {
-      await chrome.storage.local.set({ lastIntegrationMessage: `Cookie JSESSIONID não encontrado. Faça o login no IMO.` });
+      const message = 'Cookie JSESSIONID não encontrado. Faça o login no IMO.';
+      await addNewLogEntry({ timestamp: new Date().toISOString(), status: 'ERROR', message });
+      await chrome.storage.local.set({ lastIntegrationMessage: message, integrationActive: false });
       chrome.action.setBadgeText({ text: '' });
+      chrome.alarms.clear('cookie-collector');
+      chrome.runtime.sendMessage({ action: "integrationFinished" }).catch(() => {});
       return;
     }
 
@@ -96,9 +98,11 @@ async function startIntegration() {
         }
 
         if (responseData.finish === true) {
+            const message = 'Integração finalizada pelo servidor.';
+            await addNewLogEntry({ timestamp: new Date().toISOString(), status: 'INFO', message });
+            await chrome.storage.local.set({ integrationActive: false, lastIntegrationMessage: message });
             chrome.alarms.clear('cookie-collector');
             chrome.action.setBadgeText({ text: '' });
-            await chrome.storage.local.set({ lastIntegrationMessage: 'Integração finalizada pelo servidor.' });
         }
     } else {
       const logEntry = {
@@ -124,9 +128,14 @@ async function startIntegration() {
     chrome.action.setBadgeText({ text: 'FAIL' });
     chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
   } finally {
-    isIntegrationInProgress = false; // Reset flag
-    chrome.runtime.sendMessage({ action: "resumeCountdown" }).catch(() => { /* ignore errors if popup is not open */ });
-    setTimeout(() => chrome.action.setBadgeText({ text: '' }), 5000);
+    const { integrationActive } = await chrome.storage.local.get('integrationActive');
+    if (integrationActive) {
+        const { interval } = await chrome.storage.sync.get({ interval: 10 });
+        const delayInMinutes = interval / 60;
+        chrome.alarms.create('cookie-collector', { delayInMinutes: Math.max(1/60, delayInMinutes) });
+    }
+    // Notify popup to update its state
+    chrome.runtime.sendMessage({ action: "integrationFinished" }).catch(() => { /* ignore errors if popup is not open */ });
   }
 }
 
@@ -135,6 +144,29 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     startIntegration();
   }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "startIntegration") {
+        chrome.storage.local.set({ integrationActive: true }).then(() => {
+            startIntegration();
+            sendResponse({ status: "started" });
+        });
+        return true; // Keep message channel open for async response
+    } else if (request.action === "stopIntegration") {
+        chrome.storage.local.set({ integrationActive: false }).then(async () => {
+            chrome.alarms.clear('cookie-collector');
+            chrome.action.setBadgeText({ text: '' });
+            const message = 'Integração parada pelo usuário.';
+            await addNewLogEntry({ timestamp: new Date().toISOString(), status: 'INFO', message });
+            await chrome.storage.local.set({ lastIntegrationMessage: message });
+            sendResponse({ status: "stopped" });
+            // Notify popup that it's stopped to update UI
+            chrome.runtime.sendMessage({ action: "integrationFinished" }).catch(() => {});
+        });
+        return true; // Keep message channel open for async response
+    }
+});
+
 
 console.log('Background script carregado e pronto.');
 
