@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Integrador MSQD->IMO",
-  "version": "2.4.7",
+  "version": "2.4.9",
   "description": "Sincroniza dados do msqualifica.ms.gov.br para o IMO",
   "permissions": [
     "cookies",

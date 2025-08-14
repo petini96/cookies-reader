@@ -1,7 +1,7 @@
 let isIntegrationInProgress = false;
 
 async function getImoTab() {
-  const [tab] = await chrome.tabs.query({ url: "https://imo.mte.gov.br/*" });
+  const [tab] = await chrome.tabs.query({ url: "*://imo.mte.gov.br/*" });
   if (!tab || !tab.url) {
     await chrome.storage.local.set({ lastIntegrationMessage: 'Aba do IMO não encontrada. Verifique se está aberta.' });
     chrome.action.setBadgeText({ text: '' });
@@ -67,7 +67,7 @@ async function startIntegration() {
     const payload = {
       jsessionid: jsessionidCookie.value
     };
-
+    console.log("Aguardando resposta do n8n");
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -75,7 +75,7 @@ async function startIntegration() {
     });
 
     const responseData = await response.json();
-
+    console.log(responseData);
     const logStatus = responseData.status?.toLowerCase() === 'ok' ? 'SUCCESS' : 'FAIL';
 
     if (response.ok) {
