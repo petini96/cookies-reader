@@ -26,7 +26,14 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.runtime.onStartup.addListener(getImoTab);
 
-async function startIntegration() {
+async function startIntegration(isUserInitiated = false) {
+  if (isUserInitiated) {
+    const message = 'Integração iniciada pelo usuário.';
+    await addNewLogEntry({ timestamp: new Date().toISOString(), status: 'INFO', message });
+    await chrome.storage.local.set({ lastIntegrationMessage: message });
+    chrome.runtime.sendMessage({ action: "integrationFinished" }).catch(() => { /* ignore */ });
+  }
+
   chrome.action.setBadgeText({ text: '...' });
   chrome.action.setBadgeBackgroundColor({ color: '#FFA500' });
 
@@ -141,14 +148,14 @@ async function startIntegration() {
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'cookie-collector') {
-    startIntegration();
+    startIntegration(false);
   }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "startIntegration") {
         chrome.storage.local.set({ integrationActive: true }).then(() => {
-            startIntegration();
+            startIntegration(true);
             sendResponse({ status: "started" });
         });
         return true; // Keep message channel open for async response

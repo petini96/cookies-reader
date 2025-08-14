@@ -40,7 +40,10 @@ async function displayLogs() {
 }
 
 async function clearLogs() {
-    await chrome.storage.local.set({ logs: [] });
+    await chrome.storage.local.set({
+        logs: [],
+        lastIntegrationMessage: 'Nenhuma integração executada ainda.'
+    });
     await displayLogs();
 }
 
