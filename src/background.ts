@@ -91,7 +91,7 @@ async function startIntegration(isUserInitiated = false) {
         const logEntry = {
             timestamp: new Date().toISOString(),
             status: logStatus,
-            message: responseData.message || 'Resposta sem mensagem.'
+            message: String(responseData.message || 'Resposta sem mensagem.')
         };
         await addNewLogEntry(logEntry);
         await chrome.storage.local.set({ lastIntegrationMessage: logEntry.message });
@@ -135,11 +135,15 @@ async function startIntegration(isUserInitiated = false) {
     chrome.action.setBadgeText({ text: 'FAIL' });
     chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
   } finally {
-    const { integrationActive } = await chrome.storage.local.get('integrationActive');
-    if (integrationActive) {
-        const { interval } = await chrome.storage.sync.get({ interval: 10 });
-        const delayInMinutes = interval / 60;
-        chrome.alarms.create('cookie-collector', { delayInMinutes: Math.max(1/60, delayInMinutes) });
+    try {
+        const { integrationActive } = await chrome.storage.local.get('integrationActive');
+        if (integrationActive) {
+            const { interval } = await chrome.storage.sync.get({ interval: 10 });
+            const delayInMinutes = interval / 60;
+            chrome.alarms.create('cookie-collector', { delayInMinutes: Math.max(1/60, delayInMinutes) });
+        }
+    } catch (e) {
+        console.error("Error in finally block, integration loop might stop.", e);
     }
     // Notify popup to update its state
     chrome.runtime.sendMessage({ action: "integrationFinished" }).catch(() => { /* ignore errors if popup is not open */ });
