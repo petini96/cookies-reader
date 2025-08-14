@@ -85,33 +85,53 @@ async function startIntegration(isUserInitiated = false) {
 
     const responseData = await response.json();
     console.log(responseData);
-    const logStatus = responseData.status?.toLowerCase() === 'ok' ? 'SUCCESS' : 'FAIL';
 
     if (response.ok) {
-        const logEntry = {
+        const { responseCode, message } = responseData;
+
+        let logStatus = 'INFO'; // Default log status
+        if (responseCode === 'SUCCESS' || responseCode === 'FINISH') {
+            logStatus = 'SUCCESS';
+        } else if (responseCode === 'ERROR' || responseCode === 'SESSION_EXPIRED') {
+            logStatus = 'ERROR';
+        }
+
+        // Always log the response from the server
+        await addNewLogEntry({
             timestamp: new Date().toISOString(),
             status: logStatus,
-            message: String(responseData.message || 'Resposta sem mensagem.')
-        };
-        await addNewLogEntry(logEntry);
-        await chrome.storage.local.set({ lastIntegrationMessage: logEntry.message });
+            message: String(message || 'Resposta sem mensagem.')
+        });
+        await chrome.storage.local.set({ lastIntegrationMessage: message });
 
-        if (logStatus === 'SUCCESS') {
-            chrome.action.setBadgeText({ text: 'OK' });
-            chrome.action.setBadgeBackgroundColor({ color: '#28a745' });
-        } else {
-            chrome.action.setBadgeText({ text: 'FAIL' });
-            chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
-        }
+        // Act based on the response code
+        switch (responseCode) {
+            case 'SUCCESS':
+                chrome.action.setBadgeText({ text: 'OK' });
+                chrome.action.setBadgeBackgroundColor({ color: '#28a745' });
+                break;
 
-        if (responseData.finish === true) {
-            const message = 'Integração finalizada pelo servidor.';
-            await addNewLogEntry({ timestamp: new Date().toISOString(), status: 'INFO', message });
-            await chrome.storage.local.set({ integrationActive: false, lastIntegrationMessage: message });
-            chrome.alarms.clear('cookie-collector');
-            chrome.action.setBadgeText({ text: '' });
+            case 'FINISH':
+                await chrome.storage.local.set({ integrationActive: false });
+                chrome.alarms.clear('cookie-collector');
+                chrome.action.setBadgeText({ text: '' });
+                break;
+
+            case 'SESSION_EXPIRED':
+                await chrome.storage.local.set({ integrationActive: false });
+                chrome.alarms.clear('cookie-collector');
+                chrome.action.setBadgeText({ text: 'ERR' });
+                chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
+                break;
+
+            case 'ERROR':
+            default:
+                chrome.action.setBadgeText({ text: 'FAIL' });
+                chrome.action.setBadgeBackgroundColor({ color: '#dc3545' });
+                break;
         }
     } else {
+      // Handle cases where the webhook call itself fails (e.g., 500 server error)
       const logEntry = {
           timestamp: new Date().toISOString(),
           status: 'ERROR',
